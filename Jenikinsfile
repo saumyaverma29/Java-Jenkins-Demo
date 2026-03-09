@@ -21,7 +21,7 @@ pipeline {
 
     stage('Build & Test') {
       steps {
-        sh 'mvn -B clean test'
+        bat 'mvn -B clean test'
       }
       post {
         always {
@@ -32,7 +32,7 @@ pipeline {
 
     stage('Package') {
       steps {
-        sh 'mvn -B package'
+        bat 'mvn -B package'
       }
       post {
         success {
@@ -41,4 +41,5 @@ pipeline {
       }
     }
   }
+
 }
