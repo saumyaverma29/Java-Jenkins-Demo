@@ -1,0 +1,44 @@
+pipeline {
+  agent any
+
+  tools {
+    // Requires Jenkins Global Tool Configuration entries named like below,
+    // OR remove 'tools' and rely on mvn/java already installed on the agent.
+    jdk 'jdk-17'
+    maven 'maven-3'
+  }
+
+  options {
+    timestamps()
+  }
+
+  stages {
+    stage('Checkout') {
+      steps {
+        checkout scm
+      }
+    }
+
+    stage('Build & Test') {
+      steps {
+        sh 'mvn -B clean test'
+      }
+      post {
+        always {
+          junit 'target/surefire-reports/*.xml'
+        }
+      }
+    }
+
+    stage('Package') {
+      steps {
+        sh 'mvn -B package'
+      }
+      post {
+        success {
+          archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
+        }
+      }
+    }
+  }
+}
