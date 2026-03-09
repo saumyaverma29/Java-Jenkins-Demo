@@ -1,5 +1,5 @@
 pipeline {
-  agent { label 'windows' }  // optional but recommended if you have mixed agents
+  agent any  // optional but recommended if you have mixed agents
 
   tools {
     jdk 'jdk25'
