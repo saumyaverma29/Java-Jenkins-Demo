@@ -17,9 +17,26 @@ pipeline {
   }
 
   stages {
-    stage('Checkout') {
+    stage('Checkout (Selected Branch)') {
       steps {
-        checkout scm
+        // IMPORTANT: Use BRANCH_NAME parameter (falls back to main if empty)
+        checkout([
+          $class: 'GitSCM',
+          branches: [[name: "*/${params.BRANCH_NAME ?: 'main'}"]],
+          userRemoteConfigs: [[url: 'https://github.com/saumyaverma29/Java-Jenkins-Demo.git']]
+        ])
+      }
+    }
+
+    stage('Sleep (Demo)') {
+      steps {
+        script {
+          // Convert "5s" -> 5; default to 0 if blank
+          def raw = (params.SLEEP_TIME ?: '0s').toString().trim()
+          int seconds = raw.replace('s','') as int
+          echo "Sleeping for ${seconds} seconds (SLEEP_TIME=${raw})"
+          sleep time: seconds, unit: 'SECONDS'
+        }
       }
     }
 
@@ -54,7 +71,6 @@ pipeline {
       }
       post {
         always {
-          // Produces test result trend graph
           junit 'target\\surefire-reports\\*.xml'
         }
       }
@@ -74,7 +90,6 @@ pipeline {
 
   post {
     always {
-      // Helps debugging when something fails
       archiveArtifacts artifacts: 'pom.xml', onlyIfSuccessful: false
     }
   }
