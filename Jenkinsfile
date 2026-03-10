@@ -1,16 +1,36 @@
 pipeline {
-  agent any  // optional but recommended if you have mixed agents
+  agent any
 
   tools {
     jdk 'jdk25'
     maven 'M3911'
   }
 
-  options { timestamps() }
+  options {
+    timestamps()
+    skipDefaultCheckout(true)   // important when we do our own checkout
+  }
 
   stages {
-    stage('Checkout') {
-      steps { checkout scm }
+    stage('Checkout (Selected Branch)') {
+      steps {
+        checkout([
+          $class: 'GitSCM',
+          branches: [[name: "*/${params.BRANCH_NAME ?: 'main'}"]],
+          userRemoteConfigs: [[url: 'https://github.com/saumyaverma29/Java-Jenkins-Demo.git']]
+        ])
+      }
+    }
+
+    stage('Sleep (Demo)') {
+      steps {
+        script {
+          def raw = (params.SLEEP_TIME ?: '0s').toString().trim()   // e.g. "10s"
+          int seconds = raw.replace('s','') as int                  // -> 10
+          echo "Sleeping for ${seconds}s"
+          sleep time: seconds, unit: 'SECONDS'
+        }
+      }
     }
 
     stage('Build & Test') {
